@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <file:connector name="File" autoDelete="true" streaming="true" validateConnections="true" doc:name="File"/>
+    <file:file-to-string-transformer name="File_to_String" doc:name="File to String"/>
+    <flow name="recursoEstatico">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/entrada" doc:name="HTTP"/>
+        <http:static-resource-handler resourceBase="docroot" defaultFile="index.html" doc:name="HTTP Static Resource Handler"/>
+    </flow>
+    <flow name="datosEntradaHTTP">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/pedido" doc:name="HTTP"/>
+        <set-payload value="#[message.inboundProperties.'http.request.uri']" doc:name="Set Payload"/>
+        <custom-transformer class="org.mule.transformers.HttpToPedido" doc:name="Http To Pedido"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="procesamientoPedidos" doc:name="Ir a Procesar Pedidos"/>
+    </flow>
+    <flow name="datosEntradaCSV">
+        <file:inbound-endpoint path="/tmp/pedidosEntrada" moveToPattern="#[message.inboundProperties['originalFilename']]" connector-ref="File" responseTimeout="10000" transformer-refs="File_to_String" doc:name="File"/>
+        <custom-transformer class="org.mule.transformers.FileToPedido" doc:name="File To Pedido"/>
+        <collection-splitter doc:name="Collection Splitter"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="procesamientoPedidos" doc:name="Ir a Procesar Pedidos"/>
+    </flow>
+    <flow name="procesadorDePedidos">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="procesamientoPedidos" doc:name="Procesar Pedidos"/>
+        <component class="org.mule.components.ProcesadorStock" doc:name="Procesador De Stock"/>
+        <choice doc:name="Hay Stock?">
+            <when expression="#[payload.pvp &gt; 100]">
+                <component class="org.mule.components.DecrementadorStock" doc:name="Decrementador De Stock"/>
+                <choice doc:name="Pide Financiacion?">
+                    <when expression="#[payload.pvp &gt; 100]">
+                        <vm:outbound-endpoint exchange-pattern="one-way" path="tramitesFinanciacion" doc:name="Ir a Tramitar Financiacion"/>
+                    </when>
+                    <otherwise>
+                        <vm:outbound-endpoint exchange-pattern="one-way" path="emisionFactura" doc:name="Ir a Emitir Factura"/>
+                    </otherwise>
+                </choice>
+            </when>
+            <otherwise>
+                <component class="org.mule.components.RechazadorPedido" doc:name="Rachazar Pedido"/>
+                <file:outbound-endpoint path="/tmp/documentos/rechazados" outputPattern="#[function:count]-rechazado.txt" responseTimeout="10000" doc:name="File"/>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="tramitarFinanciacion">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="tramitesFinanciacion" doc:name="Tramitar Financiacion"/>
+        <choice doc:name="Deuda menor de 2000?">
+            <when expression="#[payload.pvp &gt; 100]">
+                <component class="org.mule.components.GeneradorConcesionCredito" doc:name="Conceder Credito"/>
+                <file:outbound-endpoint path="/tmp/documentos/financiados" outputPattern="#[function:count]-financiado.txt" responseTimeout="10000" doc:name="File"/>
+            </when>
+            <otherwise>
+                <component class="org.mule.components.GeneradorRechazoCredito" doc:name="Rechazar Credito"/>
+                <file:outbound-endpoint path="/tmp/documentos/nofinanciados" outputPattern="#[function:count]-noFinanciados.txt" responseTimeout="10000" doc:name="File"/>
+            </otherwise>
+        </choice>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="emisionFactura" doc:name="Ir a Emitir Factura"/>
+    </flow>
+    <flow name="emitirFactura">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="emisionFactura" doc:name="Emitir Factura"/>
+        <component class="org.mule.components.EmisorFactura" doc:name="Emisor Factura"/>
+        <file:outbound-endpoint path="/tmp/documentos/facturas" outputPattern="#[function:count]-factura.txt" responseTimeout="10000" doc:name="File"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="procesamientoEnvio" doc:name="Ir a Enviar Pedido"/>
+    </flow>
+    <flow name="procesoDeEnvio">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="procesamientoEnvio" doc:name="Enviar Pedido"/>
+        <choice doc:name="Cliente VIP?">
+            <when expression="#[payload.pvp &gt; 100]">
+                <component class="org.mule.components.GeneradorBoletinUrgente" doc:name="Pedido Urgente"/>
+                <file:outbound-endpoint path="/tmp/envios/urgentes" outputPattern="#[function:count]-urgente.txt" responseTimeout="10000" doc:name="File"/>
+            </when>
+            <otherwise>
+                <component class="org.mule.components.GeneradorBoletinOrdinario" doc:name="Pedido Ordinario"/>
+                <file:outbound-endpoint path="/tmp/envios/ordinarios" outputPattern="#[function:count]-ordinario.txt" responseTimeout="10000" doc:name="File"/>
+            </otherwise>
+        </choice>
+    </flow>
+</mule>
