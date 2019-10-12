@@ -1,34 +1,35 @@
 <html>
 <body>
-	<h1>Amazin 2.0</h1>
-	<h2>Intoduzca los datos de su compra</h2>
+	<h1>Formulario del pedido</h1>
+	<h2>Intoduzca los datos del pedido</h2>
 	<br />
-	<form action="/facturacion" method="GET">
-		Nombre: <input type="text" name="nombre" /><br /> Apellidos: <input
-			type="text" name="apellidos" /><br /> cif: <input type="text"
-			name="cif" /><br /> direccion: <input type="text" name="direccion" /><br />
-		Seleccione las cantidades de cada producto:<br /> Cien años de soledad
-		<select name="producto1">
-			<option value="0">0</option>
+	<form action="/pedido" method="GET">
+		Nombre: <input type="text" name="nombre" /><br><br>
+		NIF: <input type="text" name="nif" /><br><br>
+		Financia:
+		<select name="financia">
+			<option value="S">Si</option>
+			<option value="N">No</option>
+		</select><br><br>
+		Seleccione el producto:
+		<select name="isbn">
+			<option value="0321127420">0321127420</option>
+			<option value="0201485672">0201485672</option>
+			<option value="1933988967">1933988967</option>
+			<option value="0201615835">0201615835</option>
+			<option value="0687545125">0687545125</option>
+			<option value="1235896474">1235896474</option>
+		</select><br><br>
+		Seleccione la cantidad:
+		<select name="cantidad">
 			<option value="1">1</option>
 			<option value="2">2</option>
 			<option value="3">3</option>
-		</select> <br /> Entrevista con el vampiro <select name="producto2">
-			<option value="0">0</option>
-			<option value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-		</select> <br /> Viridiana <select name="producto3">
-			<option value="0">0</option>
-			<option value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-		</select> <br /> Pax Romana <select name="producto4">
-			<option value="0">0</option>
-			<option value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-		</select> <br /> <input type="submit" value="Realizar pedido" />
+			<option value="4">4</option>
+			<option value="5">5</option>
+		</select><br><br>
+		
+		 <input type="submit" value="Realizar pedido" />
 
 	</form>
 

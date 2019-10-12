@@ -23,7 +23,7 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
         <vm:outbound-endpoint exchange-pattern="one-way" path="procesamientoPedidos" doc:name="Ir a Procesar Pedidos"/>
     </flow>
     <flow name="datosEntradaCSV">
-        <file:inbound-endpoint path="/tmp/pedidosEntrada" moveToPattern="#[message.inboundProperties['originalFilename']]" connector-ref="File" responseTimeout="10000" transformer-refs="File_to_String" doc:name="File"/>
+        <file:inbound-endpoint path="/tmp/pedidosEntrada" moveToPattern="#[message.inboundProperties['originalFilename']]" moveToDirectory="/tmp" connector-ref="File" responseTimeout="10000" transformer-refs="File_to_String" doc:name="File"/>
         <custom-transformer class="org.mule.transformers.FileToPedido" doc:name="File To Pedido"/>
         <collection-splitter doc:name="Collection Splitter"/>
         <vm:outbound-endpoint exchange-pattern="one-way" path="procesamientoPedidos" doc:name="Ir a Procesar Pedidos"/>

@@ -22,19 +22,33 @@ public class FileToPedido extends AbstractTransformer {
 		System.out.println("Entrando en el transformador con "+src);
 		Vector<Pedido> resultado = new Vector<Pedido>();
 		String [] datos = ((String) src).split("\n");
+		String cliente = "";
+		String nif = "";
+		boolean financia = true;
 		for ( int i = 0 ; i < datos.length ; i ++)
 		{
-			/*String[] detalle = datos[i].split(";");
-			Pedido orden = new Pedido();
-			orden.setNombre(detalle[0]);
-			orden.setApellidos(detalle[1]);
-			orden.setCif(detalle[2]);
-			orden.setDireccion(detalle[3]);
-			orden.addProducto("producto1", new Integer(detalle[4].trim()));
-			orden.addProducto("producto2", new Integer(detalle[5].trim()));
-			orden.addProducto("producto3", new Integer(detalle[6].trim()));
-			orden.addProducto("producto4", new Integer(detalle[7].trim()));
-			resultado.add(orden);*/
+			if (i != 0 && i != 2) {
+				String[] detalle = datos[i].split(";");
+				if(i == 1) {
+					nif = detalle[0];
+					cliente = detalle[1];
+					if(detalle[2].equals("S")) {
+						financia = true;
+					}
+					else {
+						financia = false;
+					}
+				}
+				else {
+					Pedido pedido = new Pedido();
+					pedido.setCliente(cliente);
+					pedido.setNif(nif);
+					pedido.setFinancia(financia);
+					pedido.setIsbn(Integer.parseInt(detalle[0]));
+					pedido.setCantidad(Integer.parseInt(detalle[1]));
+					resultado.add(pedido);
+				}
+			}
 		}
 		System.out.println("Datos transformados "+resultado);
 		return resultado;

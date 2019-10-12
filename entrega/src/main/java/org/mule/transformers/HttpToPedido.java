@@ -20,8 +20,9 @@ public class HttpToPedido extends AbstractTransformer {
 	@Override
 	protected Object doTransform(Object src, String encoding)
 			throws TransformerException {
-		Pedido orden = new Pedido();
+		Pedido pedido = new Pedido();
 		String cadena="";
+		boolean financia;
 		try {
 			cadena = URLDecoder.decode(((String) src),encoding);
 		} catch (UnsupportedEncodingException e) {
@@ -32,7 +33,7 @@ public class HttpToPedido extends AbstractTransformer {
 		int comienzo = cadena.indexOf("?");
 		if ( comienzo == -1 )
 		{
-			return orden;
+			return pedido;
 		}
 		String queryString = cadena.substring(comienzo +1);
 		System.out.println("QueryString: "+cadena);
@@ -44,17 +45,24 @@ public class HttpToPedido extends AbstractTransformer {
 			if ( item.length>1 )
 				parametros.put(item[0],item[1]);
 		}
-		/*orden.setNombre(parametros.get("nombre"));
-		orden.setApellidos(parametros.get("apellidos"));
-		orden.setCif(parametros.get("cif"));
-		orden.setDireccion(parametros.get("direccion"));*/
-		for ( int i = 0 ;i < 10 ; i ++ )
+		if(parametros.get("financia").equals("S")) {
+			financia = true;
+		}
+		else {
+			financia = false;
+		}
+		pedido.setCliente(parametros.get("nombre"));
+		pedido.setNif(parametros.get("nif"));
+		pedido.setFinancia(financia);
+		pedido.setIsbn(Integer.parseInt(parametros.get("isbn")));
+		pedido.setCantidad(Integer.parseInt(parametros.get("cantidad")));
+		/*for ( int i = 0 ;i < 10 ; i ++ )
 		{
 			if ( parametros.get("producto"+i) != null ) {}
 				//orden.addProducto("producto"+i, new Integer(parametros.get("producto"+i)));
-		}
-		System.out.println("Transformado "+cadena+" en "+orden);
-		return orden;
+		}*/
+		System.out.println("Transformado "+cadena+" en "+pedido.toString());
+		return pedido;
 	}
 
 }
