@@ -8,6 +8,9 @@ public class Pedido {
 	private boolean financia;
 	private int isbn;
 	private int cantidad;
+	private boolean disponible;
+	private int deuda;
+	private boolean vip;
 	
 	public String getNif() {
 		return nif;
@@ -39,6 +42,24 @@ public class Pedido {
 	public void setCantidad(int cantidad) {
 		this.cantidad = cantidad;
 	}
+	public boolean isDisponible() {
+		return disponible;
+	}
+	public void setDisponible(boolean disponible) {
+		this.disponible = disponible;
+	}
+	public int getDeuda() {
+		return deuda;
+	}
+	public void setDeuda(int deuda) {
+		this.deuda = deuda;
+	}
+	public boolean isVip() {
+		return vip;
+	}
+	public void setVip(boolean vip) {
+		this.vip = vip;
+	}
 	
-
+	
 }

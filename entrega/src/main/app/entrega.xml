@@ -32,10 +32,10 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
         <vm:inbound-endpoint exchange-pattern="one-way" path="procesamientoPedidos" doc:name="Procesar Pedidos"/>
         <component class="org.mule.components.ProcesadorStock" doc:name="Procesador De Stock"/>
         <choice doc:name="Hay Stock?">
-            <when expression="#[payload.pvp &gt; 100]">
+            <when expression="#[payload.disponible ]">
                 <component class="org.mule.components.DecrementadorStock" doc:name="Decrementador De Stock"/>
                 <choice doc:name="Pide Financiacion?">
-                    <when expression="#[payload.pvp &gt; 100]">
+                    <when expression="#[payload.financia]">
                         <vm:outbound-endpoint exchange-pattern="one-way" path="tramitesFinanciacion" doc:name="Ir a Tramitar Financiacion"/>
                     </when>
                     <otherwise>
@@ -45,6 +45,7 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
             </when>
             <otherwise>
                 <component class="org.mule.components.RechazadorPedido" doc:name="Rachazar Pedido"/>
+                <echo-component doc:name="Echo"/>
                 <file:outbound-endpoint path="/tmp/documentos/rechazados" outputPattern="#[function:count]-rechazado.txt" responseTimeout="10000" doc:name="File"/>
             </otherwise>
         </choice>
@@ -52,27 +53,28 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
     <flow name="tramitarFinanciacion">
         <vm:inbound-endpoint exchange-pattern="one-way" path="tramitesFinanciacion" doc:name="Tramitar Financiacion"/>
         <choice doc:name="Deuda menor de 2000?">
-            <when expression="#[payload.pvp &gt; 100]">
+            <when expression="#[payload.deuda &lt; 2000]">
+                <vm:outbound-endpoint exchange-pattern="one-way" path="emisionFactura" doc:name="Ir a Emitir Factura"/>
                 <component class="org.mule.components.GeneradorConcesionCredito" doc:name="Conceder Credito"/>
                 <file:outbound-endpoint path="/tmp/documentos/financiados" outputPattern="#[function:count]-financiado.txt" responseTimeout="10000" doc:name="File"/>
             </when>
             <otherwise>
+                <vm:outbound-endpoint exchange-pattern="one-way" path="emisionFactura" doc:name="Ir a Emitir Factura"/>
                 <component class="org.mule.components.GeneradorRechazoCredito" doc:name="Rechazar Credito"/>
                 <file:outbound-endpoint path="/tmp/documentos/nofinanciados" outputPattern="#[function:count]-noFinanciados.txt" responseTimeout="10000" doc:name="File"/>
             </otherwise>
         </choice>
-        <vm:outbound-endpoint exchange-pattern="one-way" path="emisionFactura" doc:name="Ir a Emitir Factura"/>
     </flow>
     <flow name="emitirFactura">
         <vm:inbound-endpoint exchange-pattern="one-way" path="emisionFactura" doc:name="Emitir Factura"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="procesamientoEnvio" doc:name="Ir a Enviar Pedido"/>
         <component class="org.mule.components.EmisorFactura" doc:name="Emisor Factura"/>
         <file:outbound-endpoint path="/tmp/documentos/facturas" outputPattern="#[function:count]-factura.txt" responseTimeout="10000" doc:name="File"/>
-        <vm:outbound-endpoint exchange-pattern="one-way" path="procesamientoEnvio" doc:name="Ir a Enviar Pedido"/>
     </flow>
     <flow name="procesoDeEnvio">
         <vm:inbound-endpoint exchange-pattern="one-way" path="procesamientoEnvio" doc:name="Enviar Pedido"/>
         <choice doc:name="Cliente VIP?">
-            <when expression="#[payload.pvp &gt; 100]">
+            <when expression="#[payload.vip]">
                 <component class="org.mule.components.GeneradorBoletinUrgente" doc:name="Pedido Urgente"/>
                 <file:outbound-endpoint path="/tmp/envios/urgentes" outputPattern="#[function:count]-urgente.txt" responseTimeout="10000" doc:name="File"/>
             </when>

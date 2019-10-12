@@ -56,11 +56,7 @@ public class HttpToPedido extends AbstractTransformer {
 		pedido.setFinancia(financia);
 		pedido.setIsbn(Integer.parseInt(parametros.get("isbn")));
 		pedido.setCantidad(Integer.parseInt(parametros.get("cantidad")));
-		/*for ( int i = 0 ;i < 10 ; i ++ )
-		{
-			if ( parametros.get("producto"+i) != null ) {}
-				//orden.addProducto("producto"+i, new Integer(parametros.get("producto"+i)));
-		}*/
+
 		System.out.println("Transformado "+cadena+" en "+pedido.toString());
 		return pedido;
 	}
