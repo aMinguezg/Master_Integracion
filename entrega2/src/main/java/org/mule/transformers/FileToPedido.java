@@ -30,8 +30,19 @@ public class FileToPedido extends AbstractTransformer {
 			if (i != 0 && i != 2) {
 				String[] detalle = datos[i].split(";");
 				if(i == 1) {
-					nif = detalle[0];
-					cliente = detalle[1];
+					if(detalle[0] == null || detalle[0] == "") {
+						nif = "9999999999Z";
+					}
+					else {
+						nif = detalle[0];
+					}
+					if(detalle[1] == null || detalle[1] == "") {
+						cliente = "Desconocido";
+					}
+					else {
+						cliente = detalle[1];
+					}
+					
 					if(detalle[2].equals("S")) {
 						financia = true;
 					}

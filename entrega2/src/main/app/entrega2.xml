@@ -36,7 +36,7 @@ http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/em
         <vm:inbound-endpoint exchange-pattern="one-way" path="procesamientoPedidos" doc:name="Procesar Pedidos"/>
         <component class="org.mule.components.ProcesadorStock" doc:name="Procesador De Stock"/>
         <choice doc:name="Hay Stock?">
-            <when expression="#[payload.disponible ]">
+            <when expression="#[payload.disponible]">
                 <component class="org.mule.components.DecrementadorStock" doc:name="Decrementador De Stock"/>
                 <choice doc:name="Pide Financiacion?">
                     <when expression="#[payload.financia]">

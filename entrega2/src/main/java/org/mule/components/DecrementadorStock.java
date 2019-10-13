@@ -28,9 +28,12 @@ public class DecrementadorStock {
 	public Object decrementarStock(Pedido pedido) {
 
 		String isbn = String.valueOf(pedido.getIsbn());
+		int gasto = 0;
+		
 		if(isbn.length() == 9) {
 			isbn = 0 + isbn;
 		}
+		
 		int stockMenos = Integer.parseInt(stock.getProperty(isbn)) - 1;
 
 		if(deuda.getProperty(pedido.getNif()) == null) {
@@ -40,8 +43,13 @@ public class DecrementadorStock {
 		else {
 			pedido.setDeuda(Integer.parseInt(deuda.getProperty(pedido.getNif())));
 		}
-
-		int gasto = Integer.parseInt(pedidos.getProperty(pedido.getNif()));
+		
+		if(pedidos.getProperty(pedido.getNif()) == null) {
+			System.out.println("No existe el cliente");
+		}
+		else {
+			gasto = Integer.parseInt(pedidos.getProperty(pedido.getNif()));
+		}
 
 		if(gasto > 2000) {
 			pedido.setVip(true);

@@ -51,8 +51,19 @@ public class HttpToPedido extends AbstractTransformer {
 		else {
 			financia = false;
 		}
-		pedido.setCliente(parametros.get("nombre"));
-		pedido.setNif(parametros.get("nif"));
+		if(parametros.get("nif") == null || parametros.get("nif") == "") {
+			pedido.setNif("9999999999Z");
+		}
+		else {
+			pedido.setNif(parametros.get("nif"));
+		}
+		if(parametros.get("nombre") == null || parametros.get("nombre") == "") {
+			pedido.setCliente("Desconocido");
+		}
+		else {
+			pedido.setCliente(parametros.get("nombre"));
+		}
+
 		pedido.setFinancia(financia);
 		pedido.setIsbn(Integer.parseInt(parametros.get("isbn")));
 		pedido.setCantidad(Integer.parseInt(parametros.get("cantidad")));
